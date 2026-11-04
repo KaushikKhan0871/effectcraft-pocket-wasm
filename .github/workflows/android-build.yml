@@ -49,6 +49,13 @@ jobs:
         run: |
           gradle -p packaging/android assembleRelease bundleRelease
 
+      - name: Verify APK integrity and signature
+        run: |
+          APK=packaging/android/app/build/outputs/apk/release/app-release.apk
+          unzip -t "$APK" | tail -n 3
+          $ANDROID_HOME/build-tools/35.0.0/apksigner verify --verbose "$APK"
+          $ANDROID_HOME/build-tools/35.0.0/aapt dump badging "$APK" | head -n 5
+
       - name: Upload APK and AAB
         uses: actions/upload-artifact@v4
         with:
