@@ -269,7 +269,7 @@ public class MainActivity extends Activity {
 
     @SuppressLint("ClickableViewAccessibility")
     private void setupFloatingButton() {
-        btnFloatingKeyboard.setOnClickListener(v -> toggleKeyboard());
+        btnFloatingKeyboard.setOnClickListener(v -> openPocketTools());
 
         btnFloatingKeyboard.setOnTouchListener((view, event) -> {
             switch (event.getAction()) {
@@ -309,7 +309,7 @@ public class MainActivity extends Activity {
                     long elapsed = System.currentTimeMillis() - btnDownTime;
                     double totalDist = Math.hypot(event.getRawX() - startX, event.getRawY() - startY);
                     if (!isDragging || (elapsed < 350 && totalDist < 60)) {
-                        toggleKeyboard();
+                        openPocketTools();
                     }
                     isDragging = false;
                     return true;
@@ -320,18 +320,15 @@ public class MainActivity extends Activity {
         });
     }
 
-    public void toggleKeyboard() {
+    public void openPocketTools() {
         if (webView != null) {
             runOnUiThread(() -> {
                 webView.evaluateJavascript(
                     "(function() {" +
-                    "  if (typeof window.toggleVirtualKeyboard === 'function') {" +
-                    "    window.toggleVirtualKeyboard();" +
-                    "  } else if (typeof window.showVirtualKeyboard === 'function') {" +
-                    "    window.showVirtualKeyboard();" +
+                    "  if (typeof window.openPocketTools === 'function') {" +
+                    "    window.openPocketTools();" +
                     "  } else {" +
-                    "    var kb = document.getElementById('ec-keyboard-container');" +
-                    "    if (kb) kb.classList.toggle('ec-kb-hidden');" +
+                    "    console.warn('Pocket Tools menu is not ready yet');" +
                     "  }" +
                     "})();",
                     null

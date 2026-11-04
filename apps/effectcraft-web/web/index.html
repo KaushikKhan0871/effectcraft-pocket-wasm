@@ -131,6 +131,22 @@
 
       setStatus("Starting EffectCraft Pocket UI & Canvas…");
       await ec.start("effectcraft_canvas");
+
+      window.effectcraft.setInterfaceDpi = (dpi) => {
+        const value = Math.max(420, Math.min(1600, Math.round(Number(dpi) || 1050)));
+        try { localStorage.setItem("effectcraft-interface-dpi", String(value)); } catch (_) {}
+        ec.set_ui_zoom(420 / value);
+        return value;
+      };
+      window.effectcraft.getInterfaceDpi = () => {
+        try {
+          return Number(localStorage.getItem("effectcraft-interface-dpi") || "1050");
+        } catch (_) {
+          return 1050;
+        }
+      };
+      window.effectcraft.setInterfaceDpi(window.effectcraft.getInterfaceDpi());
+
       window.effectcraftLoad.readyMs = performance.now() - t0;
       if (window.AndroidBridge && window.AndroidBridge.onAppReady) {
         window.AndroidBridge.onAppReady();
@@ -157,5 +173,6 @@
     }
   </script>
   <script src="keyboard.js"></script>
+  <script src="pocket-tools.js"></script>
 </body>
 </html>

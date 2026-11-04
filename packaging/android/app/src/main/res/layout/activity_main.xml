@@ -16,6 +16,7 @@
     <!-- Floating Keyboard Button -->
     <FrameLayout
         android:id="@+id/btn_floating_keyboard"
+        android:contentDescription="Pocket Tools"
         android:layout_width="56dp"
         android:layout_height="56dp"
         android:layout_gravity="bottom|end"
@@ -30,7 +31,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:text="⌨"
+            android:text="☷"
             android:textColor="#ffffff"
             android:textSize="28sp" />
     </FrameLayout>

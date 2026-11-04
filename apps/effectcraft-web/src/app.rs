@@ -58,6 +58,23 @@ pub fn repaint() {
     });
 }
 
+
+/// Set application UI scale without changing composition render resolution.
+#[wasm_bindgen]
+pub fn set_ui_zoom(factor: f32) {
+    let factor = if factor.is_finite() {
+        factor.clamp(0.25, 2.0)
+    } else {
+        1.0
+    };
+    CTX.with(|cell| {
+        if let Some(ctx) = cell.borrow().as_ref() {
+            ctx.set_zoom_factor(factor);
+            ctx.request_repaint();
+        }
+    });
+}
+
 /// Open a project or import media from table paths (picked or dropped files).
 pub(crate) fn open_or_import(app: &mut EffectcraftApp, paths: Vec<String>) {
     let (projects, media): (Vec<String>, Vec<String>) = paths.into_iter().partition(|p| p.to_ascii_lowercase().ends_with(".ecproj"));
