@@ -1,6 +1,5 @@
 buildscript {
     repositories {
-        maven { url = uri('/root/maven/localMvnRepository') }
         google()
         mavenCentral()
     }
@@ -11,7 +10,6 @@ buildscript {
 
 allprojects {
     repositories {
-        maven { url = uri('/root/maven/localMvnRepository') }
         google()
         mavenCentral()
     }

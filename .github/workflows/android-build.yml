@@ -1,0 +1,56 @@
+name: Android APK Build
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Install wasm-bindgen
+        run: cargo install wasm-bindgen-cli --version 0.2.129 --locked
+
+      - name: Build web engine
+        run: cargo xtask web
+
+      - name: Copy web assets into Android app
+        run: |
+          mkdir -p packaging/android/app/src/main/assets/web
+          cp -R target/web/dist/. packaging/android/app/src/main/assets/web/
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.14.3'
+
+      - name: Build APK and App Bundle
+        run: |
+          gradle -p packaging/android assembleRelease bundleRelease
+
+      - name: Upload APK and AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: effectcraft-android-build
+          path: |
+            packaging/android/app/build/outputs/apk/release/app-release.apk
+            packaging/android/app/build/outputs/bundle/release/app-release.aab
