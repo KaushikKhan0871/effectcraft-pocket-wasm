@@ -7,7 +7,7 @@ android {
     compileSdk 35
 
     defaultConfig {
-        applicationId "ai.storyteller.effectcraft"
+        applicationId "ai.storyteller.effectcraft.wasmtest"
         minSdk 26
         targetSdk 35
         versionCode 600
