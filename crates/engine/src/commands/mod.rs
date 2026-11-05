@@ -20,6 +20,7 @@ pub mod essential;
 pub mod expr_tools;
 mod file;
 pub(crate) mod file_more;
+mod ffx;
 mod focus;
 pub mod footage_panel;
 pub(crate) mod frame_export;

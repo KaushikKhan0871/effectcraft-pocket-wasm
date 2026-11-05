@@ -87,7 +87,69 @@ fn save_preset(s: &mut Session, p: &Value) -> Result<Value> {
     Ok(json!({"path": path, "properties": props.len(), "effects": effects.len()}))
 }
 
+fn apply_ffx_preset(s: &mut Session, path: &str, p: &Value) -> Result<Value> {
+    let bytes = s.services.read_file(path).map_err(|e| EngineError::Other(format!("cannot read {path}: {e}")))?;
+    let document = super::ffx::parse(&bytes).map_err(|e| bad("anim.applyPreset", format!("invalid FFX preset: {e:?}")))?;
+    let (cid, layer_ids) = layers_p(s, p)?;
+    if layer_ids.is_empty() {
+        return Err(bad("anim.applyPreset", "select a layer"));
+    }
+
+    // Only map effects for which EffectCraft has a genuine native counterpart. This first
+    // importer pass intentionally does not pretend to preserve Adobe plug-in parameter data.
+    let mappings: Vec<(&str, &str)> = document.effects.iter().filter_map(|effect| {
+        let id = match effect.name.trim() {
+            "Unsharp Mask" => "ec.blur.unsharp",
+            "Curves" => "ec.color.curves",
+            "Hue/Saturation" => "ec.color.huesaturation",
+            _ => return None,
+        };
+        Some((effect.name.as_str(), id))
+    }).collect();
+    let unsupported: Vec<String> = document.effects.iter().filter(|effect| {
+        !matches!(effect.name.trim(), "Unsharp Mask" | "Curves" | "Hue/Saturation")
+    }).map(|effect| effect.name.clone()).collect();
+    if mappings.is_empty() {
+        return Err(bad("anim.applyPreset", format!("no supported native effects in this FFX; unsupported: {}", unsupported.join(", "))));
+    }
+
+    let (width, height) = {
+        let comp = s.project.comp(cid).ok_or(EngineError::NoComp)?;
+        (comp.width as f64, comp.height as f64)
+    };
+    let mut applied = 0usize;
+    s.edit("Import After Effects FFX Preset", None, |project, _| {
+        let mut next = project.next_id;
+        for layer_id in &layer_ids {
+            let layer = layer_mut(project, cid, *layer_id)?;
+            let effects = layer.props.sub_mut("effects").ok_or_else(|| bad("anim.applyPreset", "selected layer cannot contain effects"))?;
+            for (_, effect_id) in &mappings {
+                let spec = effectcraft_effects::lookup(effect_id).ok_or_else(|| bad("anim.applyPreset", format!("native effect is unavailable: {effect_id}")))?;
+                let group = effectcraft_effects::instantiate(spec, &mut effectcraft_project::build::Ids(&mut next), spec.name, [width, height]);
+                effects.children.push(group.into());
+                applied += 1;
+            }
+        }
+        project.next_id = next;
+        Ok(())
+    })?;
+
+    Ok(json!({
+        "format": "Adobe After Effects FFX",
+        "effects_applied": applied,
+        "source_effects": document.effects.len(),
+        "unsupported_effects": unsupported,
+        "parameter_values_preserved": false,
+        "warning": "This initial integration adds native editable equivalents using EffectCraft defaults. It does not yet decode FFX parameter values, keyframes, Sapphire settings, or the embedded Magic Bullet LUT."
+    }))
+}
+
 fn apply_preset(s: &mut Session, p: &Value) -> Result<Value> {
+    if let Some(path) = str_p(p, "path") {
+        if std::path::Path::new(path).extension().is_some_and(|ext| ext.eq_ignore_ascii_case("ffx")) {
+            return apply_ffx_preset(s, path, p);
+        }
+    }
     let doc: Value = match (p.get("preset"), str_p(p, "path")) {
         (Some(v), _) => v.clone(),
         (None, Some(path)) => {
