@@ -19,6 +19,7 @@ mod effect;
 pub mod essential;
 pub mod expr_tools;
 mod file;
+mod aep;
 pub(crate) mod file_more;
 mod ffx;
 mod focus;
@@ -135,6 +136,7 @@ pub fn command_specs() -> &'static [CommandSpec] {
     SPECS.get_or_init(|| {
         let mut v = Vec::new();
         v.extend(file::specs());
+        v.extend(aep::specs());
         v.extend(crate::models::specs());
         v.extend(edit::specs());
         v.extend(comp::specs());

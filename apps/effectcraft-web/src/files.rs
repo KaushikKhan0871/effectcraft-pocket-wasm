@@ -112,6 +112,9 @@ pub fn download(name: &str, data: &[u8]) -> Result<(), JsValue> {
 pub struct WebServices;
 
 impl Services for WebServices {
+    fn exists(&self, path: &str) -> bool {
+        get(path).is_some()
+    }
     fn read_file(&self, path: &str) -> std::io::Result<Vec<u8>> {
         get(path)
             .map(|d| d.to_vec())
