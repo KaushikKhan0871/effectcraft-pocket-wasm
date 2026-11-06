@@ -527,6 +527,7 @@ File
     Adobe Premiere Pro Project... | file.importTimeline
     Placeholder... | file.importPlaceholder
     Solid... | file.importSolid
+    After Effects Project (.aep, .aepx)... | file.importAep
     Lottie... | file.importLottie
     Vanishing Point (.vpe)... | file.importVanishingPoint
     Essential Graphics Template... | essential.importTemplate
