@@ -290,7 +290,7 @@ fn import_footage(project: &mut Project, cx: &mut Ctx<'_>, item: &AepItem<'_, '_
         footage.frame_rate = effectcraft_time::FrameRate::new(i64::from(f.native_frame_rate), 1);
     }
     if kind == FootageKind::Sequence {
-        footage.sync_sequence_duration();
+        footage.duration = footage.frame_rate.tick_of(i64::try_from(footage.sequence.len()).unwrap_or(i64::MAX));
     } else if let Some(d) = f.duration.filter(|d| d.num > 0 && d.den > 0) {
         footage.duration = cx_ticks(d.num, d.den);
         // A clip conformed to another rate (645: 25 native frames at 30 fps): the stored duration

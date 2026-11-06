@@ -327,7 +327,7 @@ fn import_layer_ref(p: &EffectParam<'_, '_>, target: &str, own: bool, cx: &Layer
     match p.layer_ref(cx.aep_id).unwrap_or(LayerRef::This) {
         // None: unset where unset means None (Layer Control), else the explicit None (fx27
         // `layer-none`: After Effects renders Set Matte None and self differently).
-        LayerRef::Nothing => prop.value = Value::Layer(if own { None } else { Some(effectcraft_project::NO_LAYER) }),
+        LayerRef::Nothing => prop.value = Value::Layer(if own { None } else { Some(0) }),
         LayerRef::This => prop.value = Value::Layer(own.then_some(cx.ec_id.0)),
         LayerRef::Layer(id) => {
             prop.value = Value::Layer(None);

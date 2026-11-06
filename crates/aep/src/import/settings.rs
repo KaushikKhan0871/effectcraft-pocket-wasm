@@ -50,8 +50,11 @@ pub(crate) fn map(file: &AepFile<'_>, current: &ProjectSettings, col: &mut Colle
         },
         None => {}
     }
-    if let Some(g24) = s.working_gamma_24 {
-        out.working_gamma = if g24 { 2.4 } else { 2.2 };
+    if s.working_gamma_24.is_some() {
+        col.lose(
+            LossCategory::ProjectSettings,
+            "working gamma (unsupported by this Pocket project model; current setting kept)".to_string(),
+        );
     }
     out.linearize = s.linearize;
     out.blend_linear = s.blend_linear;
