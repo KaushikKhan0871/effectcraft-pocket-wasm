@@ -184,7 +184,29 @@ fn install_hooks(app: &mut EffectcraftApp) {
         // The Effect ▸ Load Effect Plug-in command asks for exactly WASM/WAT files. Route
         // these picked files to the plugin command, not the generic media importer.
         let plugin_pick = exts.len() == 2 && exts.contains(&"wasm") && exts.contains(&"wat");
-        if plugin_pick {
+        let aep_pick = exts.len() == 2 && exts.contains(&"aep") && exts.contains(&"aepx");
+
+        if aep_pick {
+            if let Err(e) = files::pick(&accept, false, |paths| {
+                if let Some(path) = paths.into_iter().next() {
+                    post(move |app| {
+                        match app.session.execute(
+                            "file.importAep",
+                            serde_json::json!({"path": path})
+                        ) {
+                            Ok(_) => {
+                                app.ui.status = "After Effects project import completed.".into();
+                            }
+                            Err(e) => {
+                                app.ui.status = format!("AEP import failed: {e}");
+                            }
+                        }
+                    });
+                }
+            }) {
+                log::warn!("AEP file picker: {e:?}");
+            }
+        } else if plugin_pick {
             if let Err(e) = files::pick(&accept, false, |paths| {
                 if let Some(path) = paths.into_iter().next() {
                     post(move |app| {
